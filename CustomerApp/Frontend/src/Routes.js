@@ -1,8 +1,10 @@
 import React from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import DemoPage1 from "./views/DemoPage1";
 import DemoPage2 from "./views/DemoPage2";
 import NavbarLayout from "./utils/NavbarLayout";
+import ReservationForm from "./views/Reservation/reservationForm";
+
 const Router = () => {
   const location = useLocation();
   return (
@@ -12,6 +14,7 @@ const Router = () => {
         <Route path="/" element={<DemoPage1 />} />
       </Route>
       <Route path="/DemoPage2" element={<DemoPage2 />} />
+      <Route path ="/reservation" element={< ReservationForm/>}/>
     </Routes>
   );
 };
