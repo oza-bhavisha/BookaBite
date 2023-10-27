@@ -10,7 +10,9 @@ import CryptoJS from 'crypto-js';
 import AWS from 'aws-sdk';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-
+import { decryptDataKey, decryptData } from './decryption';
+import logo from "../assets/logo.png";
+import Login from './login';
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +25,6 @@ function Signup() {
   const [passwordError, setPasswordError] = useState('');
   const [nameError, setNameError] = useState('');
   const [contactError, setContactError] = useState('');
-
 
   AWS.config.update({
     accessKeyId: 'ASIA6A2O43PEFEQN3XGW', 
@@ -67,7 +68,7 @@ function Signup() {
     }
 
     registerUser(email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
         console.log('User registered:', user);
         showToast('Registration successful', 'success');
@@ -120,12 +121,12 @@ function Signup() {
       KeySpec: 'AES_256',
     };
 
-    kmsClient.generateDataKey(params, (err, data) => {
+    kmsClient.generateDataKey(params, async (err, data) => {
       if (err) {
         console.error('Error generating data key:', err);
         showToast('Registration failed', 'error');
       } else {
-        const plaintextDataKey = data.Plaintext.toString('base64');
+        const plaintextDataKey = await decryptDataKey(data.CiphertextBlob.toString('base64'), kmsClient);
         const encryptedName = CryptoJS.AES.encrypt(name, plaintextDataKey).toString();
         const encryptedContact = CryptoJS.AES.encrypt(contact, plaintextDataKey).toString();
         const encryptedEmail = CryptoJS.AES.encrypt(email, plaintextDataKey).toString();
@@ -144,6 +145,13 @@ function Signup() {
             console.log('User information stored to Firestore.');
             showToast('Registration completed', 'success');
             navigate('/DemoPage1');
+            localStorage.setItem('userData', JSON.stringify({
+              name: decryptData(encryptedName, plaintextDataKey),
+              contact: decryptData(encryptedContact, plaintextDataKey),
+              role,
+              userId,
+              email: decryptData(encryptedEmail, plaintextDataKey),
+            }));
           })
           .catch((error) => {
             console.error('Error storing user information:', error.message);
@@ -151,6 +159,36 @@ function Signup() {
           });
       }
     });
+  };
+
+
+  const backgroundStyle = {
+    backgroundImage: `url('https://img.freepik.com/free-psd/chalk-italian-food-isolated_23-2150788278.jpg?w=996&t=st=1698215694~exp=1698216294~hmac=31539d2ddf91d9c22704fd02eb0c9790c7a24e572996145992c17ee604ef320f')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    minHeight: '100vh', 
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  };
+
+  const logoStyle = {
+    cursor: 'pointer',
+    marginRight: '0px',
+    position: 'absolute', 
+    top: '10px', 
+    left: '10px', 
+  };
+
+
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    margin: '10px 10px',
+    justifyContent: 'center',
+    height: '100vh'
   };
 
   const paperStyle = {
@@ -170,7 +208,19 @@ function Signup() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <div>
+    <div style={backgroundStyle}>    
+    <img
+    src={logo}
+    alt=""
+    width={200}
+    onClick={() => {
+      navigate("/");
+    }}
+    style={logoStyle}
+  />
+  
+    <Container component="main" maxWidth="xs" style={containerStyle}>
       <Paper elevation={3} style={paperStyle}>
         <Typography variant="h5">{step === 1 ? 'Sign Up' : 'Complete Registration'}</Typography>
         <form style={formStyle} noValidate>
@@ -282,7 +332,15 @@ function Signup() {
         </form>
       </Paper>
       <ToastContainer /> 
+          
+    <button onClick={() => navigate('/login')}>
+      Switch to Login
+    </button>
+  
     </Container>
+    
+    </div>
+    </div>
   );
 }
 

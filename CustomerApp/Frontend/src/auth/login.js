@@ -8,7 +8,9 @@ import CryptoJS from 'crypto-js';
 import AWS from 'aws-sdk';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-
+import { decryptDataKey, decryptData } from './decryption';
+import logo from "../assets/logo.png";
+import Signup from './signup';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -115,12 +117,56 @@ function Login() {
       .then((response) => {
         const data = response.data;
         console.log('API Response:', data);
-        localStorage.setItem('userData', JSON.stringify(data));
         navigate('/DemoPage1');
+        decryptDataKey(data.CiphertextBlob.toString('base64'), kmsClient)
+          .then((plaintextDataKey) => {
+            const decryptedData = {
+              name: decryptData(data.name, plaintextDataKey),
+              contact: decryptData(data.contact, plaintextDataKey),
+              role: data.role,
+              userId: data.userId,
+              email: decryptData(data.email, plaintextDataKey),
+            };
+            localStorage.setItem('userData', JSON.stringify(decryptedData));
+            navigate('/DemoPage1');
+          })
+          .catch((error) => {
+            console.error('Error decrypting data key:', error);
+            showToast('Data decryption failed', 'error');
+          });
       })
       .catch((error) => {
         console.error('API request error:', error);
       });
+  };
+
+  const backgroundStyle = {
+    backgroundImage: `url('https://img.freepik.com/free-psd/chalk-italian-food-isolated_23-2150788278.jpg?w=996&t=st=1698215694~exp=1698216294~hmac=31539d2ddf91d9c22704fd02eb0c9790c7a24e572996145992c17ee604ef320f')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    minHeight: '100vh', 
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  };
+
+  const logoStyle = {
+    cursor: 'pointer',
+    marginRight: '0px',
+    position: 'absolute', 
+    top: '10px', 
+    left: '10px', 
+  };
+
+
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    margin: '10px 10px',
+    justifyContent: 'center',
+    height: '100vh'
   };
 
   const paperStyle = {
@@ -140,8 +186,20 @@ function Login() {
   };
 
   return (
+   
     <div>
-    <Container component="main" maxWidth="xs">
+      <div style={backgroundStyle}>    
+    <img
+    src={logo}
+    alt=""
+    width={200}
+    onClick={() => {
+      navigate("/");
+    }}
+    style={logoStyle}
+  />
+  
+    <Container component="main" maxWidth="xs" style={containerStyle}>
 
       <Paper elevation={3} style={paperStyle}>
         <Typography variant="h5">Login</Typography>
@@ -180,6 +238,7 @@ function Login() {
             color="primary"
             style={submitStyle}
             onClick={handleEmailPasswordLogin}
+            
           >
           
             Sign In with Email/Password
@@ -198,7 +257,12 @@ function Login() {
       </Paper>
 
       <ToastContainer /> 
+      <button onClick={() => navigate('/Signup')} >
+      Switch to Signup
+    </button>
     </Container>
+    
+    </div>
     </div>
   );
 }
