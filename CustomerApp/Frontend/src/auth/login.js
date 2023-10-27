@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Container, Paper, TextField, Typography } from '@mui/material';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'; 
 import { auth } from './firebase';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-
+import CryptoJS from 'crypto-js';
+import AWS from 'aws-sdk';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +16,20 @@ function Login() {
   const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
 
+  AWS.config.update({
+    accessKeyId: 'ASIA6A2O43PEFEQN3XGW', 
+    secretAccessKey: 'efeajwJJnbdH0K/ghl/EU0ild6lcVLirNpXoU7PH', 
+    sessionToken: 'FwoGZXIvYXdzEH0aDAqGT8R9KHQMOBoO7CLAAdQhGmNTyx9faNNbqtzEjRXamA1LBTNF1H6aOfPeYkkWHypmotk6AK9A87yGcmoyyV+47iJDUa/+zF1otRH90xX5BWRZSgmvYFNpPV441i2ekZj3wKHfsGNwcVpH1CnF/rUsbpMpWqDn/1UpUT7LiIY7yTwuCEgSfqwA5NCdHTbXU1dUpeTllxTQKp1U/64rRmILAm6d3Fo34BgaRC5iYyyjgEWgU9/c9//66rAS45pwsvMj9KH0S4rV9XMbifED7SiXmfCpBjItLk13kzV2Zmx+SZoOaLP2ZX2RjSB+kRD1qMN69SI4JL5bJOZJ3Gj/nz0+lHXE',
+    region: 'us-east-1', 
+  });
+
+  const [kmsKeyArn] = useState('arn:aws:kms:us-east-1:your-aws-account-id:key/your-key-id-or-alias'); 
+  const [kmsClient, setKmsClient] = useState(null);
+
+  useEffect(() => {
+    const kms = new AWS.KMS({ region: 'us-east-1' }); 
+    setKmsClient(kms);
+  }, []);
 
   const showToast = (message, type) => {
     toast(message, {
@@ -25,11 +40,9 @@ function Login() {
   };
 
   const handleEmailPasswordLogin = () => {
-
     setEmailError('');
     setPasswordError('');
 
-   
     let valid = true;
     if (!email) {
       setEmailError('Email is required');
@@ -43,6 +56,27 @@ function Login() {
     if (!valid) {
       return;
     }
+
+    const params = {
+      KeyId: kmsKeyArn,
+      KeySpec: 'AES_256', 
+    };
+
+    kmsClient.generateDataKey(params, (err, data) => {
+      if (err) {
+        console.error('Error generating data key:', err);
+        showToast('Login failed', 'error');
+      } else {
+        const encryptedDataKey = data.CiphertextBlob; 
+        const plaintextDataKey = data.Plaintext; 
+
+      
+        const encryptedEmail = CryptoJS.AES.encrypt(email, plaintextDataKey).toString();
+
+       
+        makeAPIRequest(encryptedEmail, encryptedDataKey);
+      }
+    });
 
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -82,7 +116,7 @@ function Login() {
         const data = response.data;
         console.log('API Response:', data);
         localStorage.setItem('userData', JSON.stringify(data));
-        navigate('/DemoPage1')
+        navigate('/DemoPage1');
       })
       .catch((error) => {
         console.error('API request error:', error);
