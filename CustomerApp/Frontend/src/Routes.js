@@ -3,7 +3,10 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import DemoPage1 from "./views/DemoPage1";
 import DemoPage2 from "./views/DemoPage2";
 import NavbarLayout from "./utils/NavbarLayout";
-import ReservationForm from "./views/Reservation/reservationForm";
+import ViewReservation from "./views/Reservation/viewReservation";
+
+import Slots from "./views/Reservation/checkAvailability";
+
 
 const Router = () => {
   const location = useLocation();
@@ -14,7 +17,11 @@ const Router = () => {
         <Route path="/" element={<DemoPage1 />} />
       </Route>
       <Route path="/DemoPage2" element={<DemoPage2 />} />
-      <Route path ="/reservation" element={< ReservationForm/>}/>
+
+      <Route path="/checkAvailability" Component={Slots} />
+      <Route path="/viewReservation" Component={ViewReservation} />
+  
+
     </Routes>
   );
 };

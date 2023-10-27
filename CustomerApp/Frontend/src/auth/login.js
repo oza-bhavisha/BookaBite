@@ -78,6 +78,7 @@ function Login() {
         const data = response.data;
         console.log('API Response:', data);
         localStorage.setItem('userData', JSON.stringify(data));
+        localStorage.setItem('user_id', 1);
       })
       .catch((error) => {
         console.error('API request error:', error);

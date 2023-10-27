@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Grid, Typography } from "@mui/material";
-
+import { useNavigate } from 'react-router-dom';
 import img1 from "../../assets/vec2.jpeg";
 import Login from "../../auth/login";
 import Signup from "../../auth/signup";
-const DemoPage1 = () => {
 
+const DemoPage1 = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
   const containerStyle = {
@@ -37,6 +38,7 @@ const DemoPage1 = () => {
         <button onClick={() => setIsLogin(!isLogin)}>
           {isLogin ? 'Switch to Register' : 'Switch to Login'}
         </button>
+
       </div>
       </Grid>
     </>

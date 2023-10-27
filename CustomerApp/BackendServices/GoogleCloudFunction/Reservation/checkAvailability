@@ -1,0 +1,85 @@
+
+const admin = require("firebase-admin");
+const functions = require("@google-cloud/functions-framework");
+const cors = require("cors");
+
+
+// Initialize the Firebase Admin SDK with your credentials file
+const serviceAccount = require("./serviceAccount.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+
+const db = admin.firestore();
+
+
+const wrappedProcessRequest = (req, res) => {
+    cors()(req, res, () => {
+        processRequest(req, res);
+    });
+};
+
+const processRequest = (req, res) => {
+    if (req.method !== 'POST') {
+        return res.status(400).send({ error: 'Invalid request method' });
+    }
+
+    const { operationHours, no_of_tables, restaurant_id } = req.body;
+
+
+    db.collection('Reservation')
+        .where("restaurant_id", "==", restaurant_id)
+        .get()
+        .then(reservationsSnapshot => {
+            const reservations = reservationsSnapshot.docs.map(doc => doc.data());
+
+            let currentDate = new Date();
+            let availability = {};
+
+            for (let i = 0; i < 5; i++) {
+                let dayName = currentDate.toLocaleString('default', { weekday: 'long' });
+                if (operationHours.days.includes(dayName)) {
+                    let dateStr = currentDate.toISOString().split('T')[0];
+                    availability[dateStr] = [];
+                    
+                    for (let hour = operationHours.openingHour; hour <= operationHours.closingHour; hour++) {
+                        const isBookedForThisHourAndDate = reservations.some(res => {
+                            let reservationDate = new Date(res.reservation_timestamp);
+                            return reservationDate.getHours() === hour && reservationDate.toISOString().split('T')[0] === dateStr;
+                        });
+
+                        if (!isBookedForThisHourAndDate) {
+                            availability[dateStr].push({
+                                timeSlot: `${hour}:00-${hour+1}:00`,
+                                availableTables: no_of_tables
+                            });
+                        } else {
+                            const bookedTablesForThisHour = reservations.filter(res => {
+                                let reservationDate = new Date(res.reservation_timestamp);
+                                return reservationDate.getHours() === hour && reservationDate.toISOString().split('T')[0] === dateStr;
+                            }).reduce((acc, curr) => acc + curr.no_of_tables, 0);
+
+                            if (no_of_tables - bookedTablesForThisHour > 0) {
+                                availability[dateStr].push({
+                                    timeSlot: `${hour}:00-${hour+1}:00`,
+                                    availableTables: no_of_tables - bookedTablesForThisHour
+                                });
+                            }
+                        }
+                    }
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return res.status(201).json({ message: 'Availabe added' });
+
+        })
+        .catch(error => {
+            return res.status(500).send({ error: 'Failed fetching reservations', details: error });
+        });
+
+return res.status(201).json({ message: 'Reservation added'});
+
+};
+functions.http("checkAvailability", wrappedProcessRequest);
