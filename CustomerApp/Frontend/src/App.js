@@ -10,6 +10,7 @@ import DemoPage2 from "./views/DemoPage2";
 import NavbarLayout from './utils/NavbarLayout';
 import RestaurantDetails from './list-restaurant/RestaurantDetails';
 import RestaurantList from './list-restaurant/RestaurantList';
+
 import './list-restaurant/styles.css';
 import Footer from './utils/Footer';
 

@@ -8,6 +8,8 @@ import DemoPage2 from './views/DemoPage2';
 import NavbarLayout from './utils/NavbarLayout';
 import RestaurantDetails from './list-restaurant/RestaurantDetails';
 import RestaurantList from './list-restaurant/RestaurantList';
+import ViewReservation from "./views/Reservation/viewReservation";
+import Slots from "./views/Reservation/checkAvailability";
 import './list-restaurant/styles.css';
 import Footer from './utils/Footer';
 
@@ -25,6 +27,8 @@ const Router = () => {
       <Route path="/DemoPage2" element={<DemoPage2 />} />
       <Route path="/restaurantList" element={<RestaurantList />} />
       <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+      <Route path="/checkAvailability" element={Slots} />
+      <Route path="/viewReservation" element={ViewReservation} />
     </Routes>
     <Footer />
     </>
