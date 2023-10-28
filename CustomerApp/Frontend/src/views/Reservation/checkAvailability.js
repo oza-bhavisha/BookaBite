@@ -53,19 +53,20 @@ function BookingInterface() {
     const randomDigits = Math.floor(Math.random() * 1000); // Generate a random three-digit number
     return Number(`${timestamp}${randomDigits}`);
   }
-  
+  const user_id= localStorage.getItem('user_id');
   const reservation_id = generateReservationId();
   const addReservation = () => {
     const reservationData = {
       "reservation_id": reservation_id,
       "reservation_status": "Pending",
-      "user_id": 1,
+      "user_id": user_id,
       "no_of_tables": noOfTables,
       "reservation_timestamp": `${selectedDate}T${selectedTimeSlot}:00Z`,
       "updated_date": new Date().toISOString(),
+      "table_size":4,
       "restaurant_id": 1,
       "food_reservation": foodReservation,
-      "updated_by": 1,
+      "updated_by": user_id,
       "description": `Reservation for ${noOfTables}`
     };
 
