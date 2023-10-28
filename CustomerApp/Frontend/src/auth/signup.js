@@ -6,13 +6,12 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid'; 
 import MenuItem from '@mui/material/MenuItem'; 
 import { toast, ToastContainer } from 'react-toastify';
-import CryptoJS from 'crypto-js';
-import AWS from 'aws-sdk';
+
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { decryptDataKey, decryptData } from './decryption';
 import logo from "../assets/logo.png";
-import Login from './login';
+
+
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,20 +25,7 @@ function Signup() {
   const [nameError, setNameError] = useState('');
   const [contactError, setContactError] = useState('');
 
-  AWS.config.update({
-    accessKeyId: 'ASIA6A2O43PEFEQN3XGW', 
-    secretAccessKey: 'efeajwJJnbdH0K/ghl/EU0ild6lcVLirNpXoU7PH', 
-    sessionToken: 'FwoGZXIvYXdzEH0aDAqGT8R9KHQMOBoO7CLAAdQhGmNTyx9faNNbqtzEjRXamA1LBTNF1H6aOfPeYkkWHypmotk6AK9A87yGcmoyyV+47iJDUa/+zF1otRH90xX5BWRZSgmvYFNpPV441i2ekZj3wKHfsGNwcVpH1CnF/rUsbpMpWqDn/1UpUT7LiIY7yTwuCEgSfqwA5NCdHTbXU1dUpeTllxTQKp1U/64rRmILAm6d3Fo34BgaRC5iYyyjgEWgU9/c9//66rAS45pwsvMj9KH0S4rV9XMbifED7SiXmfCpBjItLk13kzV2Zmx+SZoOaLP2ZX2RjSB+kRD1qMN69SI4JL5bJOZJ3Gj/nz0+lHXE',
-    region: 'us-east-1',  
-  });
-
-  const [kmsKeyArn] = useState('arn:aws:kms:us-east-1:963848756168:key/1a0d89cc-fe03-463e-a19a-364a7a49c878'); 
-  const [kmsClient, setKmsClient] = useState(null);
-
-  useEffect(() => {
-    const kms = new AWS.KMS({ region: 'us-east-1' });
-    setKmsClient(kms);
-  }, []);
+  
 
   const showToast = (message, type) => {
     toast(message, {
@@ -115,51 +101,31 @@ function Signup() {
     if (!valid) {
       return;
     }
-
-    const params = {
-      KeyId: kmsKeyArn,
-      KeySpec: 'AES_256',
-    };
-
-    kmsClient.generateDataKey(params, async (err, data) => {
-      if (err) {
-        console.error('Error generating data key:', err);
-        showToast('Registration failed', 'error');
-      } else {
-        const plaintextDataKey = await decryptDataKey(data.CiphertextBlob.toString('base64'), kmsClient);
-        const encryptedName = CryptoJS.AES.encrypt(name, plaintextDataKey).toString();
-        const encryptedContact = CryptoJS.AES.encrypt(contact, plaintextDataKey).toString();
-        const encryptedEmail = CryptoJS.AES.encrypt(email, plaintextDataKey).toString();
-
-        const userId = uuidv4();
+    const userId = uuidv4();
+        
         const userData = {
-          name: encryptedName,
-          contact: encryptedContact,
+          name,
+          contact,
           role,
           userId,
-          email: encryptedEmail,
+          email
         };
-
+        
         axios.post('https://dd0kk3kq5f.execute-api.us-east-1.amazonaws.com/prod/signup', userData)
-          .then(() => {
+          .then((response) => {
             console.log('User information stored to Firestore.');
             showToast('Registration completed', 'success');
-            navigate('/DemoPage1');
-            localStorage.setItem('userData', JSON.stringify({
-              name: decryptData(encryptedName, plaintextDataKey),
-              contact: decryptData(encryptedContact, plaintextDataKey),
-              role,
-              userId,
-              email: decryptData(encryptedEmail, plaintextDataKey),
-            }));
+          
+                localStorage.setItem('userData', JSON.stringify(userData));
+                navigate('/DemoPage1');
+          
           })
           .catch((error) => {
             console.error('Error storing user information:', error.message);
             showToast('Registration failed', 'error');
           });
       }
-    });
-  };
+  
 
 
   const backgroundStyle = {

@@ -4,13 +4,10 @@ import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 
 import { auth } from './firebase';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-import CryptoJS from 'crypto-js';
-import AWS from 'aws-sdk';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { decryptDataKey, decryptData } from './decryption';
 import logo from "../assets/logo.png";
-import Signup from './signup';
+
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,21 +15,7 @@ function Login() {
   const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
 
-  AWS.config.update({
-    accessKeyId: 'ASIA6A2O43PEFEQN3XGW', 
-    secretAccessKey: 'efeajwJJnbdH0K/ghl/EU0ild6lcVLirNpXoU7PH', 
-    sessionToken: 'FwoGZXIvYXdzEH0aDAqGT8R9KHQMOBoO7CLAAdQhGmNTyx9faNNbqtzEjRXamA1LBTNF1H6aOfPeYkkWHypmotk6AK9A87yGcmoyyV+47iJDUa/+zF1otRH90xX5BWRZSgmvYFNpPV441i2ekZj3wKHfsGNwcVpH1CnF/rUsbpMpWqDn/1UpUT7LiIY7yTwuCEgSfqwA5NCdHTbXU1dUpeTllxTQKp1U/64rRmILAm6d3Fo34BgaRC5iYyyjgEWgU9/c9//66rAS45pwsvMj9KH0S4rV9XMbifED7SiXmfCpBjItLk13kzV2Zmx+SZoOaLP2ZX2RjSB+kRD1qMN69SI4JL5bJOZJ3Gj/nz0+lHXE',
-    region: 'us-east-1', 
-  });
-
-  const [kmsKeyArn] = useState('arn:aws:kms:us-east-1:your-aws-account-id:key/your-key-id-or-alias'); 
-  const [kmsClient, setKmsClient] = useState(null);
-
-  useEffect(() => {
-    const kms = new AWS.KMS({ region: 'us-east-1' }); 
-    setKmsClient(kms);
-  }, []);
-
+  
   const showToast = (message, type) => {
     toast(message, {
       type, 
@@ -59,33 +42,16 @@ function Login() {
       return;
     }
 
-    const params = {
-      KeyId: kmsKeyArn,
-      KeySpec: 'AES_256', 
-    };
-
-    kmsClient.generateDataKey(params, (err, data) => {
-      if (err) {
-        console.error('Error generating data key:', err);
-        showToast('Login failed', 'error');
-      } else {
-        const encryptedDataKey = data.CiphertextBlob; 
-        const plaintextDataKey = data.Plaintext; 
-
-      
-        const encryptedEmail = CryptoJS.AES.encrypt(email, plaintextDataKey).toString();
-
-       
-        makeAPIRequest(encryptedEmail, encryptedDataKey);
-      }
-    });
+   
 
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
         console.log('User logged in with email and password:', user);
         showToast('Login successful', 'success');
-        makeAPIRequest(email);
+
+      
+        makeAPIRequest(user.email);
       })
       .catch((error) => {
         console.error('Email/password login error:', error.message);
@@ -98,9 +64,11 @@ function Login() {
     signInWithPopup(auth, provider)
       .then((userCredential) => {
         const user = userCredential.user;
-        console.log('User logged in with Google:', user);
+       // console.log('User logged in with Google:', user);
         showToast('Login with Google successful', 'success');
+        console.log(user.email);
         makeAPIRequest(user.email);
+
       })
       .catch((error) => {
         console.error('Google login error:', error.message);
@@ -118,22 +86,9 @@ function Login() {
         const data = response.data;
         console.log('API Response:', data);
         navigate('/DemoPage1');
-        decryptDataKey(data.CiphertextBlob.toString('base64'), kmsClient)
-          .then((plaintextDataKey) => {
-            const decryptedData = {
-              name: decryptData(data.name, plaintextDataKey),
-              contact: decryptData(data.contact, plaintextDataKey),
-              role: data.role,
-              userId: data.userId,
-              email: decryptData(data.email, plaintextDataKey),
-            };
-            localStorage.setItem('userData', JSON.stringify(decryptedData));
+        console.log(data);
+            localStorage.setItem('userData', JSON.stringify(data));
             navigate('/DemoPage1');
-          })
-          .catch((error) => {
-            console.error('Error decrypting data key:', error);
-            showToast('Data decryption failed', 'error');
-          });
       })
       .catch((error) => {
         console.error('API request error:', error);

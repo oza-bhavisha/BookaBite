@@ -1,22 +1,20 @@
 import CryptoJS from 'crypto-js';
 
 const decryptDataKey = (encryptedDataKey, kmsClient) => {
-    const ciphertextBlob = Uint8Array.from(atob(encryptedDataKey), c => c.charCodeAt(0));
-  
     return new Promise((resolve, reject) => {
-      kmsClient.decrypt({ CiphertextBlob: ciphertextBlob }, (err, data) => {
+      kmsClient.decrypt({ CiphertextBlob: encryptedDataKey }, (err, data) => {
         if (err) {
           console.error('Error decrypting data key:', err);
           reject(err);
         } else {
-          const plaintextDataKey = btoa(String.fromCharCode.apply(null, data.Plaintext));
-          resolve(plaintextDataKey);
+          const plaintextDataKey = data.Plaintext;
+          console.log('Decrypted Plaintext Data Key:', plaintextDataKey.toString('base64'));
+          resolve(plaintextDataKey.toString('base64'));
         }
       });
     });
   };
   
-
 const decryptData = (encryptedData, plaintextDataKey) => {
   const decryptedData = CryptoJS.AES.decrypt(encryptedData, plaintextDataKey, {
     format: CryptoJS.format.OpenSSL,
