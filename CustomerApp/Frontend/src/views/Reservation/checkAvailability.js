@@ -9,8 +9,8 @@ function BookingInterface() {
   const [showModal, setShowModal] = useState(false);
   
   const foodItems = [
-    { id: 1, name: 'Item 1' },
-    { id: 2, name: 'Item 2' },
+    { id: 1, quantity: 1 },
+    { id: 2, quantity: 2 },
   ];
   
   useEffect(() => {
