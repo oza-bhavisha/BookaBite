@@ -30,11 +30,11 @@ function Signup() {
   };
 
   const handleRegister = () => {
-    // Reset error messages
+
     setEmailError('');
     setPasswordError('');
     
-    // Validate email and password
+
     let valid = true;
     if (!email) {
       setEmailError('Email is required');
@@ -109,7 +109,7 @@ function Signup() {
       email,
     };
 
-    axios.post('https://us-central1-serverless-project-402603.cloudfunctions.net/signup', userData)
+    axios.post('https://dd0kk3kq5f.execute-api.us-east-1.amazonaws.com/prod/signup', userData)
       .then(() => {
         console.log('User information stored to firestore.');
         showToast('Registration completed', 'success');

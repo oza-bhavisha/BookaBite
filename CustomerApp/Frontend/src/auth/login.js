@@ -4,13 +4,17 @@ import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 
 import { auth } from './firebase';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
+
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const navigate = useNavigate();
+
 
   const showToast = (message, type) => {
     toast(message, {
@@ -69,7 +73,7 @@ function Login() {
   };
 
   const makeAPIRequest = (email) => {
-    const apiUrl = 'https://us-central1-serverless-project-402603.cloudfunctions.net/getrole';
+    const apiUrl = 'https://dd0kk3kq5f.execute-api.us-east-1.amazonaws.com/prod/get-role';
     const requestBody = { email };
 
     axios
@@ -78,7 +82,7 @@ function Login() {
         const data = response.data;
         console.log('API Response:', data);
         localStorage.setItem('userData', JSON.stringify(data));
-        localStorage.setItem('user_id', 1);
+        navigate('/DemoPage1')
       })
       .catch((error) => {
         console.error('API request error:', error);
@@ -102,7 +106,9 @@ function Login() {
   };
 
   return (
+    <div>
     <Container component="main" maxWidth="xs">
+
       <Paper elevation={3} style={paperStyle}>
         <Typography variant="h5">Login</Typography>
         <form style={formStyle} noValidate>
@@ -141,6 +147,7 @@ function Login() {
             style={submitStyle}
             onClick={handleEmailPasswordLogin}
           >
+          
             Sign In with Email/Password
           </Button>
           <Button
@@ -155,8 +162,10 @@ function Login() {
           </Button>
         </form>
       </Paper>
+
       <ToastContainer /> 
     </Container>
+    </div>
   );
 }
 

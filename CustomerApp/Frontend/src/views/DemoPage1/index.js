@@ -25,13 +25,13 @@ const DemoPage1 = () => {
         alignItems="center"
         style={{ minHeight: "65vh" }}
       >
-        {/* <Typography variant="h5">Demo page with Navbar Layout</Typography> */}
-        {/* <img
+        <Typography variant="h5">Demo page with Navbar Layout</Typography>
+        <img
           src={img1}
           alt="Your Description"
           style={{ textAlign: "center" }}
           width={400}
-        /> */}
+        />
 
         <div style={containerStyle}>
         {isLogin ? <Login /> : <Signup />}
