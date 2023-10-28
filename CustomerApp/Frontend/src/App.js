@@ -5,7 +5,7 @@ import Signup from "./auth/signup";
 import First from "./auth/first";
 import DemoPage1 from "./views/DemoPage1";
 import DemoPage2 from "./views/DemoPage2";
-
+import RestaurantMenu from "./views/menu/ReservationMenu";
 export function isLoggedIn() {
   const token = localStorage.getItem("userData");
   return token !== null;
@@ -23,9 +23,12 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/first" element={<First />} />
-          <Route path="/*" element={<Navigate to="/first" />} />
+          <Route path= "/RestaurantMenu" element ={<RestaurantMenu/>} />
+
+          {/* <Route path="/*" element={<Navigate to="/first" />} /> */}
           <Route path = '/DemoPage1' element = <Auth><DemoPage1/></Auth> />
           <Route path = '/DemoPage2' element = <Auth><DemoPage2/></Auth> />
+
         </Routes>
       </ScrollToTop>
     </BrowserRouter>
