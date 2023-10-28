@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Container, Paper, TextField, Typography } from '@mui/material';
 import { registerUser } from './firebase'; 
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -6,7 +6,11 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid'; 
 import MenuItem from '@mui/material/MenuItem'; 
 import { toast, ToastContainer } from 'react-toastify';
+
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import logo from "../assets/logo.png";
+
 
 function Signup() {
   const [email, setEmail] = useState('');
@@ -15,11 +19,13 @@ function Signup() {
   const [contact, setContact] = useState('');
   const [role, setRole] = useState('customer'); 
   const [step, setStep] = useState(1); 
-
+  const navigate = useNavigate();
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [nameError, setNameError] = useState('');
   const [contactError, setContactError] = useState('');
+
+  
 
   const showToast = (message, type) => {
     toast(message, {
@@ -30,10 +36,8 @@ function Signup() {
   };
 
   const handleRegister = () => {
-
     setEmailError('');
     setPasswordError('');
-    
 
     let valid = true;
     if (!email) {
@@ -50,7 +54,7 @@ function Signup() {
     }
 
     registerUser(email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
         console.log('User registered:', user);
         showToast('Registration successful', 'success');
@@ -81,11 +85,9 @@ function Signup() {
   };
 
   const handleCompleteRegistration = () => {
-
     setNameError('');
     setContactError('');
 
- 
     let valid = true;
     if (!name) {
       setNameError('Name is required');
@@ -99,25 +101,60 @@ function Signup() {
     if (!valid) {
       return;
     }
-
     const userId = uuidv4();
-    const userData = {
-      name,
-      contact,
-      role,
-      userId,
-      email,
-    };
+        
+        const userData = {
+          name,
+          contact,
+          role,
+          userId,
+          email
+        };
+        
+        axios.post('https://dd0kk3kq5f.execute-api.us-east-1.amazonaws.com/prod/signup', userData)
+          .then((response) => {
+            console.log('User information stored to Firestore.');
+            showToast('Registration completed', 'success');
+          
+                localStorage.setItem('userData', JSON.stringify(userData));
+                navigate('/DemoPage1');
+          
+          })
+          .catch((error) => {
+            console.error('Error storing user information:', error.message);
+            showToast('Registration failed', 'error');
+          });
+      }
+  
 
-    axios.post('https://dd0kk3kq5f.execute-api.us-east-1.amazonaws.com/prod/signup', userData)
-      .then(() => {
-        console.log('User information stored to firestore.');
-        showToast('Registration completed', 'success');
-      })
-      .catch((error) => {
-        console.error('Error storing user information:', error.message);
-        showToast('Registration failed', 'error');
-      });
+
+  const backgroundStyle = {
+    backgroundImage: `url('https://img.freepik.com/free-psd/chalk-italian-food-isolated_23-2150788278.jpg?w=996&t=st=1698215694~exp=1698216294~hmac=31539d2ddf91d9c22704fd02eb0c9790c7a24e572996145992c17ee604ef320f')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    minHeight: '100vh', 
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  };
+
+  const logoStyle = {
+    cursor: 'pointer',
+    marginRight: '0px',
+    position: 'absolute', 
+    top: '10px', 
+    left: '10px', 
+  };
+
+
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    margin: '10px 10px',
+    justifyContent: 'center',
+    height: '100vh'
   };
 
   const paperStyle = {
@@ -137,7 +174,19 @@ function Signup() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <div>
+    <div style={backgroundStyle}>    
+    <img
+    src={logo}
+    alt=""
+    width={200}
+    onClick={() => {
+      navigate("/");
+    }}
+    style={logoStyle}
+  />
+  
+    <Container component="main" maxWidth="xs" style={containerStyle}>
       <Paper elevation={3} style={paperStyle}>
         <Typography variant="h5">{step === 1 ? 'Sign Up' : 'Complete Registration'}</Typography>
         <form style={formStyle} noValidate>
@@ -249,7 +298,15 @@ function Signup() {
         </form>
       </Paper>
       <ToastContainer /> 
+          
+    <button onClick={() => navigate('/login')}>
+      Switch to Login
+    </button>
+  
     </Container>
+    
+    </div>
+    </div>
   );
 }
 
