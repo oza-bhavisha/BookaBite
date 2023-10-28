@@ -148,14 +148,14 @@ export default function NavbarLayout(props) {
           sx={{
             // p: 1,
             width: "100%",
-            minHeight: "80vH",
+            minHeight: "2vH",
           }}
         >
           <Toolbar />
           <Outlet />
         </Box>
       </Box>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

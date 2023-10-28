@@ -1,3 +1,5 @@
+import React from 'react';
+import Router from "./Routes";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import ScrollToTop from "./utils/ScrollToTop";
 import Router from "./Routes";

@@ -1,0 +1,106 @@
+// Importing required modules
+const admin = require("firebase-admin");
+const functions = require("@google-cloud/functions-framework");
+const cors = require("cors");
+
+// Importing Firebase service account credentials
+const serviceAccount = require("./serviceAccount.json");
+
+// Initializing Firebase Admin SDK with the credentials
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+// Creating an instance of Firestore
+const db = admin.firestore();
+
+// Wrapping the main request handler function with CORS middleware
+const wrappedProcessRequest = (req, res) => {
+    cors()(req, res, () => {
+        processRequest(req, res);
+    });
+};
+
+// Main function to check table availability in a restaurant
+const processRequest = (req, res) => {
+    // Ensure the HTTP method is POST
+    if (req.method !== 'POST') {
+        return res.status(400).send({ error: 'Invalid request method' });
+    }
+
+    // Destructure required data from the request body
+    const { operationHours, no_of_tables, restaurant_id } = req.body;
+
+    // Fetch reservations for the specified restaurant
+    db.collection('Reservation')
+        .where("restaurant_id", "==", restaurant_id)
+        .get()
+        .then(reservationsSnapshot => {
+            // Convert the snapshot data into an array
+            const reservations = reservationsSnapshot.docs.map(doc => doc.data());
+
+            // Initialize variables for table availability logic
+            let currentDate = new Date();
+            let availability = {};
+
+            // Loop to check availability for the next 5 days
+            for (let i = 0; i < 5; i++) {
+                let dayName = currentDate.toLocaleString('default', { weekday: 'long' });
+
+                // Ensure the day is part of the restaurant's operating days
+                if (operationHours.days.includes(dayName)) {
+                    let dateStr = currentDate.toISOString().split('T')[0];
+                    availability[dateStr] = [];
+                    
+                    // Loop through the operating hours of the restaurant
+                    for (let hour = operationHours.openingHour; hour <= operationHours.closingHour; hour++) {
+                        // Check if a reservation exists for a specific hour and date
+                        const isBookedForThisHourAndDate = reservations.some(res => {
+                            let reservationDate = new Date(res.reservation_timestamp);
+                            return reservationDate.getHours() === hour && reservationDate.toISOString().split('T')[0] === dateStr;
+                        });
+
+                        // If no reservation exists for that hour, add to availability
+                        if (!isBookedForThisHourAndDate) {
+                            availability[dateStr].push({
+                                timeSlot: `${hour}:00-${hour+1}:00`,
+                                availableTables: no_of_tables
+                            });
+                        } else {
+                            // Calculate the number of tables booked for a specific hour
+                            const bookedTablesForThisHour = reservations.filter(res => {
+                                let reservationDate = new Date(res.reservation_timestamp);
+                                return reservationDate.getHours() === hour && reservationDate.toISOString().split('T')[0] === dateStr;
+                            }).reduce((acc, curr) => acc + curr.no_of_tables, 0);
+
+                            // Determine the remaining tables and add to availability
+                            if (no_of_tables - bookedTablesForThisHour > 0) {
+                                availability[dateStr].push({
+                                    timeSlot: `${hour}:00-${hour+1}:00`,
+                                    availableTables: no_of_tables - bookedTablesForThisHour
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Move to the next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // Return the availability data
+            return res.status(201).json({ message: 'Availability added' });
+
+        })
+        .catch(error => {
+            // Handle errors while fetching reservations
+            return res.status(500).send({ error: 'Failed fetching reservations', details: error });
+        });
+
+    // Default return for function
+    return res.status(201).json({ message: 'Reservation added' });
+
+};
+
+// Expose the function via HTTP with the name "checkAvailability"
+functions.http("checkAvailability", wrappedProcessRequest);
