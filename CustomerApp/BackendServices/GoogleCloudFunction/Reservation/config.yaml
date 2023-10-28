@@ -1,0 +1,41 @@
+swagger: '2.0'
+info:
+  title: Serverless API Gateway
+  description: API Gateway for serverless cloud functions
+  version: '1.0'
+host: serverless-402614.uc.gateway.dev  # This will change based on where the gateway is deployed.
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  /checkAvailability:
+    post:
+      summary: Check Availability
+      operationId: checkAvailability
+      x-google-backend:
+        address: https://us-central1-serverless-402614.cloudfunctions.net/checkAvailability
+        protocol: h2
+      responses:
+        '200':
+          description: Successful Response
+      x-google-endpoints:
+        cors:
+          allow-headers: "Authorization, Content-Type"
+          allow-methods: "POST"
+          allow-origin: "*"
+  /addReservation:
+    post:
+      summary: Add Reservation
+      operationId: addReservation
+      x-google-backend:
+        address: https://us-central1-serverless-402614.cloudfunctions.net/addReservation
+        protocol: h2
+      responses:
+        '200':
+          description: Successful Response
+      x-google-endpoints:
+        cors:
+          allow-headers: "Authorization, Content-Type"
+          allow-methods: "POST"
+          allow-origin: "*"
