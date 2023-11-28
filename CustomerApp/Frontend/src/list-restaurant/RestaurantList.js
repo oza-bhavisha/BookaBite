@@ -10,25 +10,25 @@ const RestaurantList = () => {
   const [restaurantsData, setRestaurantsData] = useState([]);
 
   // Using the useEffect hook to fetch the list of restaurants
+  const fetchRestaurants = async () => {
+    try {
+      // Fetching data from the provided API endpoint
+      const response = await axios.get(
+        "https://hgwqqzlobd57p6bt3lwrzm4lni0rboec.lambda-url.us-east-1.on.aws/"
+      );
+      
+      console.log(response.data);
+      if(response.data)
+      setRestaurantsData(response.data);
+    } catch (error) {
+      console.error("Error fetching data: ", error); // Logging an error if the data fetching fails
+    }
+  };
   useEffect(() => {
-    const fetchRestaurants = async () => {
-      try {
-        // Fetching data from the provided API endpoint
-        const response = await axios.get(
-          "https://b3irstkdylemeqtu2ep24jvtd40jsnnr.lambda-url.us-east-1.on.aws/"
-        );
-        // Parsing the received data
-        // const data = JSON.parse(response.data.body.replace(/"(\s+)(\w+)(?=")/g, '"$2'));
-        // console.log(data); // Logging the data to the console
-        // Setting the restaurants data in the state
-        if (response.data) setRestaurantsData(response?.data);
-      } catch (error) {
-        console.error("Error fetching data: ", error); // Logging an error if the data fetching fails
-      }
-    };
+    
 
     fetchRestaurants(); // Calling the fetchRestaurants function
-  }, []);
+  }, [setRestaurantsData]);
 
   // Rendering the list of restaurants
   return (
@@ -36,7 +36,9 @@ const RestaurantList = () => {
       <h1>List of Restaurants</h1> {/* Displaying the title */}
       <div className="restaurants">
         {/* Mapping through the restaurantsData and rendering each restaurant as a RestaurantCard component */}
-        {restaurantsData?.map((restaurant, index) => (
+        
+        {restaurantsData && restaurantsData?.map((restaurant, index) => (
+          
           <RestaurantCard
             key={index} // Using the index as the key
             id={restaurant.restaurant_id} // Passing the restaurant id

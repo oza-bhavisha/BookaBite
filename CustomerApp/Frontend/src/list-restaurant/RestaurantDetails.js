@@ -36,7 +36,7 @@ const RestaurantDetails = () => {
       try {
         // Make a GET request to the API to fetch restaurant details
         const response = await axios.get(
-          "https://b3irstkdylemeqtu2ep24jvtd40jsnnr.lambda-url.us-east-1.on.aws/"
+          "https://hgwqqzlobd57p6bt3lwrzm4lni0rboec.lambda-url.us-east-1.on.aws/"
         );
         // Parse and clean the data received from the API
         const data = response.data;
