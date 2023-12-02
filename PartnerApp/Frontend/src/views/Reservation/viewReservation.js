@@ -119,15 +119,15 @@ const ReservationList = () => {
 
   const handleSubmitUpdate = async () => {
     // Step 1: Convert date, time and restaurant_id to a timestamp
-    // Assuming your time slot format is "HH:MM - HH:MM"
+    // Assuming time slot format is "HH:MM - HH:MM"
     const [hours, minutes] = selectedSlot.split("-")[0].trim().split(":");
     const timestamp = `${checkDate}T${hours}:${minutes}Z`;
 
     // Step 2: Prepare the updated data
     const updatedData = {
-      id: updatingReservationId, // The reservation ID to update
+      id: updatingReservationId, 
       reservation_timestamp: timestamp,
-      no_of_tables: selectedTables, // This is hardcoded for now, adjust as needed
+      no_of_tables: selectedTables, 
       updated_by: userId,
       updated_date: new Date().toISOString(),
     };
