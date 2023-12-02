@@ -214,7 +214,8 @@ const restaurantId = generateReservationId();
       // Calling Lambda endpoint
       const response = await axios({
         method: 'post',
-        url: 'https://aqs85q6n1m.execute-api.us-east-1.amazonaws.com/prod/s3uploadlambda', // The  API Gateway endpoint
+        url: ' https://oblbtb4rq7.execute-api.us-east-1.amazonaws.com/dev/uploadImage',
+       //This is Raman's account url url: 'https://aqs85q6n1m.execute-api.us-east-1.amazonaws.com/prod/s3uploadlambda', // The  API Gateway endpoint
         data: JSON.stringify({
           image: base64.split(',')[1], // Remove the data URI prefix
           filename: selectedImage.name, // Include the original file name

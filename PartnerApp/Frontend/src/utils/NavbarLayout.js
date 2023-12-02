@@ -27,7 +27,8 @@ export default function NavbarLayout(props) {
   const location = useLocation();
 
   let navItems = [];
-  navItems = ["Menu"];
+  navItems = ["Menu","grid", "viewReservation"];
+  
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);

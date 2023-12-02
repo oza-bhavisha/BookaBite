@@ -153,7 +153,8 @@ function BookingInterface() {
         reservation_timestamp: reservationData.reservation_timestamp,
       };
       
-      axios.post("https://xam0fmzd13.execute-api.us-east-1.amazonaws.com/prod/addreservation", {
+      axios.post("https://addreservation-upiqfrlb3a-uc.a.run.app", {
+     // axios.post("https://xam0fmzd13.execute-api.us-east-1.amazonaws.com/prod/addreservation", {
         body: JSON.stringify(mailreservationData)
       })
         .then((res) => {
@@ -172,7 +173,8 @@ function BookingInterface() {
       checkDate: date
     };
   
-    fetch('https://z21l2a983l.execute-api.us-east-1.amazonaws.com/prod1/checkSlotByDate', {
+    //fetch('https://z21l2a983l.execute-api.us-east-1.amazonaws.com/prod1/checkSlotByDate', {
+      fetch('https://checkavailaibilitybydate-upiqfrlb3a-uc.a.run.app',{
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

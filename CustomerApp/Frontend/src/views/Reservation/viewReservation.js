@@ -46,8 +46,10 @@ const ReservationList = () => {
         })
         
         try {
-            const response = await fetch('https://z21l2a983l.execute-api.us-east-1.amazonaws.com/prod1/checkSlotByDate', {
-                method: 'POST',
+            //const response = await fetch('https://z21l2a983l.execute-api.us-east-1.amazonaws.com/prod1/checkSlotByDate', {
+                
+            const response = await fetch('https://checkavailaibilitybydate-upiqfrlb3a-uc.a.run.app', {
+              method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -126,7 +128,9 @@ const ReservationList = () => {
       try {
         console.log(JSON.stringify(updatedData))
           const response = await fetch('https://us-central1-serverless-402614.cloudfunctions.net/updateReservation', {
-              method: 'POST',
+           // const response = await fetch('https://updatereservationdescription-upiqfrlb3a-uc.a.run.app', {
+           
+          method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
               },
@@ -144,7 +148,8 @@ const ReservationList = () => {
               };
       
               await axios.post("https://xam0fmzd13.execute-api.us-east-1.amazonaws.com/prod/updateReservation", {
-                body: JSON.stringify(updatedReservationData),
+            
+             body: JSON.stringify(updatedReservationData),
               })
               .then((res) => {
                 console.log('Response:', res.data);
@@ -167,6 +172,8 @@ const ReservationList = () => {
         const fetchReservations = async () => {
             try {
                 const response = await fetch(`https://us-central1-serverless-402614.cloudfunctions.net/viewReservation2?user_id=${userId}`, {
+                //    const response = await fetch(`https://viewreservationbyresid-upiqfrlb3a-uc.a.run.app?user_id=612d37b6-14c3-4f3a-b241-5ed0d27b0df2`, {
+                     
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -215,7 +222,8 @@ const deleteReservation = async (reservationId,restaurantId) => {
         const response = await axios({
             
             method: 'DELETE',
-            url: `https://us-central1-serverless-402614.cloudfunctions.net/deleteReservation`,
+           // url: `https://us-central1-serverless-402614.cloudfunctions.net/deleteReservation`,
+           url: `https://deletereservation-upiqfrlb3a-uc.a.run.app`,
             data: {
                 reservation_id: reservationId
             }
